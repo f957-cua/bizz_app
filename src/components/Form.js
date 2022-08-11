@@ -2,8 +2,9 @@ import { useState } from "react";
 import { clientApi } from "../redux/client/clientApi.js";
 import {documentDefinitionApi} from "../redux/layout/documentDefinitionApi.js";
 
-import shortid from "shortid";
 import Notification from "../views/Notification.js";
+import Input from "../views/UI/Input.js";
+import Button from "../views/UI/Button.js";
 
 export default function Form() {
   const [clientName, setClientName] =
@@ -18,15 +19,6 @@ export default function Form() {
     notificationText,
     setNotificationText,
   ] = useState("");
-
-  // ids for inputs
-  const nameInputId =
-    shortid.generate();
-  const ageInputId = shortid.generate();
-
-  // for validation input "name"
-  const namePattern =
-    "^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$";
   
   // set inputs
   const handleChange = (e) => {
@@ -111,7 +103,7 @@ export default function Form() {
       // clear state
       resetInputs();
     } catch (e) {
-      onSendToNotification(e.message.error.data.message);
+      onSendToNotification(e.message);
     }
   };
 
@@ -138,53 +130,29 @@ export default function Form() {
       >
         {inputs && (
           <>
-            <label
-              htmlFor={nameInputId}
+            <Input
               name={inputs[0].name}
-              className="mt-2 md:mt-0 md:pr-2 md:ml-8 text-base font-bold"
-            >
-              {inputs[0].label}
-            </label>
-            <input
-              id={nameInputId}
-              type="text"
-              placeholder={
-                inputs[0].name
-              }
-              name={inputs[0].name}
-              pattern={namePattern}
-              onChange={handleChange}
+              label={inputs[0].label}
               value={clientName}
-              className="border h-[28px] w-[140px] md:w-1/6 text-base text-center shadow-md"
-            />
-            <label
-              htmlFor={ageInputId}
-              name="age"
-              className="mt-2 md:mt-0 md:pr-2 md:ml-8 text-base font-bold"
-            >
-              {inputs[1].label}
-            </label>
-            <input
-              id={ageInputId}
-              type="number"
-              placeholder={
-                inputs[1].name
-              }
-              name={inputs[1].name}
+              type={inputs[0].type}
               onChange={handleChange}
+              maxLength={inputs[0].maxLength}
+              />
+            <Input
+              name={inputs[1].name}
+              label={inputs[1].label}
               value={clientAge}
-              className="border h-[28px] w-[140px] md:w-1/6 text-base text-center shadow-md"
-            />
+              type={inputs[1].type}
+              onChange={handleChange}
+              />
           </>
         )}
         {layouts && (
-          <button
-            type="submit"
-            name={layouts[0].type}
-            className="w-[80px] md:h-[35px] mt-2 md:mt-0 md:ml-4 box-border py-1 px-4 text-gray-800 hover:text-gray-500 font-bold bg-slate-500 hover:bg-slate-700 rounded-lg"
-          >
-            {layouts[0].label}
-          </button>
+          <Button 
+          type="submit"
+          name={layouts[0].type}
+          label={layouts[0].label} 
+          />
         )}
       </form>
     </>
