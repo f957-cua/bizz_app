@@ -12,13 +12,6 @@ export const documentDefinitionApi = createApi(
         "https://bizz-backend.herokuapp.com/",
     }),
     endpoints: (build) => ({
-      searchDocumentDefinition:
-        build.query({
-          query: () =>
-            'api/definition/1',
-          transformResponse: (res) =>
-            res.schema.fields,
-        }),
       searchLayouts: build.query({
         query: () => ({
           url: 'api/layout/2',

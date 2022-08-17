@@ -4,6 +4,9 @@ import MongoStoreView from "../views/MongoStoreView";
 export default function MongoStore() {
   const { error, isLoading, data, refetch } =
     clientApi.useGetAllClientsQuery();
+  
+  const [removeClient, {}] =
+    clientApi.useDeleteClientMutation();
 
   return (
     <>
@@ -12,6 +15,7 @@ export default function MongoStore() {
         error={error}
         isLoading={isLoading}
         refetch={refetch}
+        remove={removeClient}
       />
     </>
   )

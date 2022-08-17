@@ -1,16 +1,47 @@
 import { useState } from "react";
+import is from "is_js";
 import { clientApi } from "../redux/client/clientApi.js";
-import {documentDefinitionApi} from "../redux/layout/documentDefinitionApi.js";
 
 import Notification from "../views/Notification.js";
-import Input from "../views/UI/Input.js";
+import InputForm from "../views/UI/InpurForm.js";
 import Button from "../views/UI/Button.js";
 
 export default function Form() {
-  const [clientName, setClientName] =
-    useState("");
-  const [clientAge, setClientAge] =
-    useState("");
+  const [
+    formControls,
+    setFormControls,
+  ] = useState({
+    form: {
+      clientName: {
+        value: "",
+        type: "text",
+        label: "clientName",
+        errorMessage:
+          "Please type correct name",
+        valid: false,
+        touched: false,
+        validation: {
+          required: true,
+          alphaNumeric: true,
+          minLength: 3,
+        },
+      },
+      clientAge: {
+        value: "",
+        type: "number",
+        label: "clientAge",
+        errorMessage:
+          "Please type correct age",
+        valid: false,
+        touched: false,
+        validation: {
+          required: true,
+          maxLength: 3,
+        },
+      },
+    },
+  });
+
   const [
     showNotification,
     setShowNotification,
@@ -19,44 +50,6 @@ export default function Form() {
     notificationText,
     setNotificationText,
   ] = useState("");
-  
-  // set inputs
-  const handleChange = (e) => {
-    const { name, value } =
-      e.currentTarget;
-
-    switch (name) {
-      case "name":
-        setClientName(value);
-        break;
-
-      case "age":
-        setClientAge(value);
-        break;
-
-      default:
-        alert(
-          `Field ${name} types are not processed `
-        );
-    }
-  };
-
-  // reset inputs
-  const resetInputs = () => {
-    setClientName("");
-    setClientAge("");
-  };
-
-  // query data for "button" from redux use RTKQuery (JSON => layouts DB)
-  const { data: layouts } =
-    documentDefinitionApi.useSearchLayoutsQuery();
-
-  // query data for "inputs" from redux use RTKQuery (JSON => documentDefinition DB)
-  const {
-    isLoading: loadingDocument,
-    isError: errorDocument,
-    data: inputs,
-  } = documentDefinitionApi.useSearchDocumentDefinitionQuery();
 
   // mutation f() and query data for "POST" from redux use RTKQuery (JSON => new document to DB)
   const [
@@ -73,16 +66,110 @@ export default function Form() {
     setNotificationText(
       JSON.stringify(data)
     );
-
     setTimeout(() => {
       setShowNotification(false);
     }, 3000);
+  };
+
+  // validate control
+  const validateControl = (
+    value,
+    validation
+  ) => {
+    if (!validation) {
+      return true;
+    }
+
+    let isValid = true;
+
+    if (validation.required) {
+      isValid =
+        value.trim() !== "" && isValid;
+    }
+
+    if (validation.alphaNumeric) {
+      isValid =
+        is.alphaNumeric(value) &&
+        isValid;
+    }
+
+    if (validation.minLength) {
+      isValid =
+        value.length >=
+          validation.minLength &&
+        isValid;
+    }
+
+    if (validation.maxLength) {
+      isValid =
+        value.length <=
+          validation.maxLength &&
+        isValid;
+    }
+
+    return isValid;
+  };
+
+  // set inputs
+  const onChangeHandler = (
+    e,
+    controlName
+  ) => {
+    const newFormControls = {
+      ...formControls,
+    };
+    const control = {
+      ...formControls.form[controlName],
+    };
+
+    control.value = e.target.value;
+    control.touched = true;
+    control.valid = validateControl(
+      control.value,
+      control.validation
+    );
+
+    newFormControls.form[controlName] =
+      control;
+
+    setFormControls(newFormControls);
+  };
+
+  // reset inputs
+  const resetInputs = () => {
+    const newFormControls = {
+      ...formControls,
+    };
+
+    newFormControls.form.clientName.value =
+      "";
+    newFormControls.form.clientAge.value =
+      "";
+
+    setFormControls(newFormControls);
   };
 
   // form submit
   const handleSubmit = async (e) => {
     try {
       e.preventDefault();
+
+      const clientAge =
+        formControls.form.clientAge
+          .value;
+      const clientName =
+        formControls.form.clientName
+          .value;
+      // check empty fields
+      if (
+        clientName.length === 0 ||
+        clientAge.length === 0
+      ) {
+        resetInputs();
+        throw new Error(
+          "One or both fields are empty"
+        );
+      }
 
       // client validation
       if (clientAge >= 150) {
@@ -106,18 +193,45 @@ export default function Form() {
       onSendToNotification(e.message);
     }
   };
+  
+  function renderInputs() {
+    return Object.keys(
+      formControls.form
+    ).map((controlName, index) => {
+      const control =
+        formControls.form[controlName];
+      return (
+        <InputForm
+          key={controlName + index}
+          type={control.type}
+          value={control.value}
+          valid={control.valid}
+          touched={control.touched}
+          label={control.label}
+          shouldValidate={
+            !!control.validation
+          }
+          errorMessage={
+            control.errorMessage
+          }
+          onChange={(event) =>
+            onChangeHandler(
+              event,
+              controlName
+            )
+          }
+        />
+      );
+    });
+  }
 
   return (
     <>
-      {(loadingDocument ||
-        isLoading) && (
+      {isLoading && (
         <Notification message="Loading document definition" />
       )}
-      { isError && (
+      {isError && (
         <Notification message="Document didn't create in DB, try one more time" />
-      )}
-      { errorDocument && (
-        <Notification message="Error in document definition" />
       )}
       {showNotification && (
         <Notification
@@ -128,32 +242,13 @@ export default function Form() {
         className="flex flex-col md:flex-row justify-center items-center md:h-[150px]"
         onSubmit={handleSubmit}
       >
-        {inputs && (
-          <>
-            <Input
-              name={inputs[0].name}
-              label={inputs[0].label}
-              value={clientName}
-              type={inputs[0].type}
-              onChange={handleChange}
-              maxLength={inputs[0].maxLength}
-              />
-            <Input
-              name={inputs[1].name}
-              label={inputs[1].label}
-              value={clientAge}
-              type={inputs[1].type}
-              onChange={handleChange}
-              />
-          </>
-        )}
-        {layouts && (
-          <Button 
+        {renderInputs()}
+        
+        <Button
           type="submit"
-          name={layouts[0].type}
-          label={layouts[0].label} 
-          />
-        )}
+          label="Save"
+        />
+        
       </form>
     </>
   );

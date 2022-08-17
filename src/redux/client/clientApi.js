@@ -15,15 +15,32 @@ export const clientApi = createApi({
       query: () => ({
         url: "api/documents",
       }),
-      providesTags: result => ["Clients"]
+      providesTags: (result) => [
+        "Clients",
+      ],
     }),
     createClient: build.mutation({
       query: (client) => ({
         url: "api/documents",
         method: "POST",
-        body: client
+        body: client,
       }),
-      invalidatesTags: ["Clients"]
+      invalidatesTags: ["Clients"],
+    }),
+    updateClient: build.mutation({
+      query: (field) => ({
+        url: `api/documents/${field.id}`,
+        method: "PATCH",
+        body: field.data,
+      }),
+      invalidatesTags: ["Clients"],
+    }),
+    deleteClient: build.mutation({
+      query: (id) => ({
+        url: `api/documents/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Clients"],
     }),
   }),
 });
