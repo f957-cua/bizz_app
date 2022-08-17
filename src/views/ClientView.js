@@ -21,7 +21,7 @@ export default function ClientView({ name, age, id, clientRemove }) {
       className="flex relative justify-between mt-2 md:mt-0 flex-col w-[140px] h-[60px] border"
     >
       <button
-        className="absolute outline outline-2 left-1 top-1 w-[17px] h-[50px] hover:bg-slate-600 rounded bg-gray-400 shadow-md w-[24px] font-bold text-gray-800 hover:text-gray-500 bg-slate-500 hover:bg-slate-600"
+        className="absolute outline outline-2 left-1 top-1 w-[17px] h-[50px] hover:bg-slate-600 rounded bg-gray-400 shadow-md w-[18px] font-bold text-gray-800 hover:text-gray-500 bg-slate-500 hover:bg-slate-600"
         onClick={clientRemove}
       >
         <svg
